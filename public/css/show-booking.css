@@ -1,52 +1,20 @@
-* {
-  box-sizing: border-box;
-}
 
-body {
-  font-family: 'Inter', sans-serif;
-  background: #f4f4f9;
-  color: #1a1a2e;
-  margin: 0;
-  padding: 0 20px;
-}
-
-header {
-  background-color: #1a1a2e;
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
-
-header h1 span {
-  color: #e94560;
-}
-
-main {
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px 0;
-}
-
-.section {
-  margin-bottom: 20px;
-}
-
-.section h3 {
-  margin-bottom: 10px;
-  text-align: center;
-  font-weight: 600;
-}
-
+* { box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f4f4f9; color: #1a1a2e; margin: 0; padding: 0 20px; }
+header { background-color: #1a1a2e; color: white; padding: 20px; text-align: center; }
+header h1 span { color: #e94560; }
+main { max-width: 1200px; margin: auto; padding: 20px 0; }
+.section { margin-bottom: 20px; }
+.section h3 { margin-bottom: 10px; text-align: center; font-weight: 600; }
 .row {
   display: flex;
   gap: 6px;
   margin-bottom: 8px;
   justify-content: center;
-  flex-wrap: wrap; /* changed from nowrap for mobile stacking */
-  overflow-x: auto;
+  flex-wrap: nowrap;
+  overflow-x: visible;
   align-items: center;
 }
-
 .row::before {
   content: attr(data-row);
   font-weight: 600;
@@ -54,9 +22,7 @@ main {
   display: inline-block;
   width: 20px;
   text-align: right;
-  flex-shrink: 0;
 }
-
 .seat {
   width: 26px;
   height: 30px;
@@ -72,96 +38,22 @@ main {
   background: #fff;
   flex-shrink: 0;
 }
-
-.seat.selected {
-  background-color: #4caf50 !important;
-  color: white;
-}
-
-.seat.sold {
-  background-color: #727171;
-  border-color: #727171;
-  cursor: not-allowed;
-  color: white;
-}
-
-.seat:hover:not(.sold) {
-  transform: scale(1.05);
-}
-
-.seat.gap {
-  background: none;
-  border: none;
-  cursor: default;
-  visibility: hidden;
-  width: 26px;
-  height: 26px;
-}
-
-#controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px 0;
-  flex-wrap: wrap;
-}
-
-button {
-  background: #ffffff;
-  border: 1px solid #2cc311;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button:hover {
-  background: #2fde18;
-}
-
-footer {
-  background-color: #1a1a2e;
-  color: white;
-  text-align: center;
-  padding: 15px;
-  margin-top: 20px;
-}
-
-/* 💡 Mobile optimization */
+  .seat.selected {
+    background-color: #4caf50 !important; /* green */
+    color: white;
+  }
+.seat.sold { background-color: #727171; border-color: #727171; cursor: not-allowed; color: white; }
+.seat:hover:not(.sold) { transform: scale(1.05); }
+.seat.gap { background: none; border: none; cursor: default; visibility: hidden; width: 26px; height: 26px; }
+#controls { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+button { background: #ffffff; border: 1px solid #2cc311; padding: 10px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: background 0.2s ease; }
+button:hover { background: #2fde18; }
+footer { background-color: #1a1a2e; color: white; text-align: center; padding: 15px; margin-top: 20px; }
 @media (max-width: 600px) {
-  body {
-    padding: 0 10px;
-  }
-
-  .seat,
-  .seat.gap {
-    width: 20px;
-    height: 20px;
-    font-size: 7px;
-  }
-
-  header h1 {
-    font-size: 20px;
-  }
-
-  .section h3 {
-    font-size: 16px;
-  }
-
-  button {
-    font-size: 12px;
-    padding: 8px 12px;
-  }
-
-  .row::before {
-    font-size: 10px;
-    margin-right: 4px;
-    width: 16px;
-  }
+  .seat, .seat.gap { width: 20px; height: 20px; font-size: 8px; }
 }
 
-/* 🔐 Booking states */
+
 .seat.locked {
   background-color: #bb4e06;
   cursor: not-allowed;
