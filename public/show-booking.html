@@ -20,7 +20,9 @@
   <header><h1><span>Book</span>MyNIT - Seat Booking</h1></header>
   <main>
     <p id="userInfo"></p>
-    <div id="seatWrapper"></div>
+<div id="seatWrapperContainer">
+  <div id="seatWrapper"></div>
+</div>
     <div>SCREEN THIS WAY</div>
 
     <div class="legend">
@@ -38,6 +40,7 @@
     import { db, auth, doc, getDoc, setDoc, updateDoc, collection, getDocs, onAuthStateChanged, serverTimestamp } from "./js/firebase.js";
 
     const seatWrapper = document.getElementById("seatWrapper");
+const seatWrapperContainer = document.getElementById("seatWrapperContainer");
     const confirmBtn = document.getElementById("confirmBtn");
     let selectedSeats = [];
     let currentUser = null;
@@ -221,6 +224,32 @@ renderLayout();
 
 
 });
+let isDown = false;
+let startX;
+let scrollLeft;
+
+seatWrapperContainer.addEventListener('mousedown', (e) => {
+  isDown = true;
+  seatWrapperContainer.classList.add('active');
+  startX = e.pageX - seatWrapperContainer.offsetLeft;
+  scrollLeft = seatWrapperContainer.scrollLeft;
+});
+seatWrapperContainer.addEventListener('mouseleave', () => {
+  isDown = false;
+  seatWrapperContainer.classList.remove('active');
+});
+seatWrapperContainer.addEventListener('mouseup', () => {
+  isDown = false;
+  seatWrapperContainer.classList.remove('active');
+});
+seatWrapperContainer.addEventListener('mousemove', (e) => {
+  if (!isDown) return;
+  e.preventDefault();
+  const x = e.pageX - seatWrapperContainer.offsetLeft;
+  const walk = (x - startX) * 1.5; // scroll speed
+  seatWrapperContainer.scrollLeft = scrollLeft - walk;
+});
+
 
   </script>
 </body>
