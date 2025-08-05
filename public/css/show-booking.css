@@ -67,3 +67,21 @@ footer { background-color: #1a1a2e; color: white; text-align: center; padding: 1
 .seat.selected {
   background-color: green;
 }
+#seatWrapperContainer {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 0;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+}
+
+#seatWrapperContainer:active {
+  cursor: grabbing;
+}
+
+#seatWrapper {
+  display: inline-block;
+  white-space: nowrap;
+  min-width: 700px;
+}
+
