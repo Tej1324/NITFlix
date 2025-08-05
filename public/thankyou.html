@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Thank You - BookMyNIT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * *{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      height: 100vh;
+      background: #0d0d0d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-auto-rows: 100px;
+      z-index: 0;
+    }
+
+    .grid-bg span {
+      display: block;
+      background: #181818;
+      border: 1px solid #2b2b2b;
+      transition: 1.5s;
+    }
+
+    .grid-bg span:hover {
+      background: #f00;
+      transition: 0s;
+    }
+  .thankyou-card {
+    position: relative;
+    background: rgba(24, 24, 24, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+    text-align: center;
+    z-index: 2;
+    max-width: 400px;
+    width: 90%;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f00;
+    margin-bottom: 15px;
+  }
+  p {
+    font-size: 1rem;
+    color: #bbb;
+    margin-bottom: 25px;
+  }
+  a {
+    display: inline-block;
+    background: #f00;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s ease;
+  }
+  a:hover {
+    background: #c40000;
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg">
+    <script>
+      for (let i = 0; i < 150; i++) {
+        document.write('<span></span>');
+      }
+    </script>
+  </div>
+
+  <div class="thankyou-card">
+    <h1>Thank You for Booking!</h1>
+    <p>Your booking has been submitted and is pending payment approval.<br>
+    You will be contacted if any issues arise.</p>
+    <a href="index.html">Return to Home</a>
+  </div>
+</body>
+</html>
