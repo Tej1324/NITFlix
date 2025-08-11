@@ -85,3 +85,67 @@ footer { background-color: #1a1a2e; color: white; text-align: center; padding: 1
   min-width: 700px;
 }
 
+#screen-indicator {
+  text-align: center;
+  margin: 30px 0 10px;
+  font-weight: bold;
+  color: #1a1a2e;
+  font-size: 16px;
+}
+
+.legend.horizontal {
+  display: flex;
+  justify-content: center;
+  gap: 100px;
+  margin-bottom: 30px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #1a1a2e;
+}
+
+.legend-item .seat {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+}
+
+.legend-item .seat.available {
+  background-color: #ffffff;
+}
+
+.legend-item .seat.selected {
+  background-color: green;
+}
+
+.legend-item .seat.booked {
+  background-color: #a1a1a1;
+}
+@media (max-width: 640px) {
+  .legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap; /* keep them in one line */
+    gap: 6px; /* even smaller gap */
+    padding: 0 8px; /* add side padding so they don't touch edges */
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 3px; /* smaller gap between box & text */
+    font-size: 11px; /* shrink text */
+    white-space: nowrap;
+  }
+
+  .legend-item .box {
+    width: 12px;
+    height: 12px; /* smaller color box */
+  }
+}
