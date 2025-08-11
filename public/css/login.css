@@ -1,0 +1,185 @@
+
+    *{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      height: 100vh;
+      background: #0d0d0d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-auto-rows: 100px;
+      z-index: 0;
+    }
+
+    .grid-bg span {
+      display: block;
+      background: #181818;
+      border: 1px solid #2b2b2b;
+      transition: 1.5s;
+    }
+
+    .grid-bg span:hover {
+      background: #f00;
+      transition: 0s;
+    }
+
+    .login-container {
+      z-index: 2;
+      background: rgba(24, 24, 24, 0.85);
+      backdrop-filter: blur(15px);
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
+      color: #fff;
+    }
+
+    .login-container h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #f00;
+    }
+
+    .login-container p {
+      text-align: center;
+      color: #bbb;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #ccc;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      background: #2b2b2b;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      color: #aaa;
+    }
+
+    .options a {
+      color: #f00;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .btn-signin {
+      width: 100%;
+      background-color: #f00;
+      color: #fff;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-bottom: 16px;
+    }
+
+    .btn-signin:hover {
+      background-color: #c40000;
+    }
+
+    .google-btn {
+      width: 100%;
+      border: 1px solid #444;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      background-color: #181818;
+      color: #fff;
+    }
+
+    .google-btn img {
+      height: 20px;
+      margin-right: 10px;
+    }
+
+    .signup-text {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .signup-text a {
+      color: #f00;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .flip-card {
+  background: transparent;
+  width: 100%;
+  max-width: 400px;
+  height: 450px;
+  perspective: 1000px;
+  z-index: 2;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 12px;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}

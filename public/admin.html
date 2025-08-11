@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - BookMyNIT</title>
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <hr style="margin-top: 40px;" />
+<h3>🔓 Manual Seat Release</h3>
+<input type="text" id="seatIdInput" placeholder="Enter Seat ID (e.g., A1)" />
+<button id="releaseSeatBtn">Release Seat</button>
+<p id="releaseStatus"></p>
+<div id="declinedContainer">Loading...</div>
+
+  <h2>Admin Panel - Pending Approvals</h2>
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn" style="display:none;">Logout</button>
+  <div id="bookingsContainer" style="margin-top: 20px;">Loading...</div>
+  <button id="resetSeatsBtn">🔄 Reset All Seats</button>
+<h3>✅ Approved Bookings</h3>
+<div id="approvedContainer">Loading...</div>
+
+<h3>❌ Declined Bookings</h3>
+<div id="declinedContainer">Loading...</div>
+
+
+  <script type="module">
+    import {
+      auth,
+      db,
+      doc,
+      updateDoc,
+      collection,
+      getDocs,
+      deleteDoc, // ✅ add this line
+      query,
+      where,
+      onAuthStateChanged
+    } from './js/firebase.js';
+
+    import {
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const bookingsContainer = document.getElementById('bookingsContainer');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const resetSeatsBtn = document.getElementById('resetSeatsBtn');
+const approvedContainer = document.getElementById('approvedContainer');
+const declinedContainer = document.getElementById('declinedContainer');
+
+
+resetSeatsBtn.addEventListener('click', async () => {
+  if (!confirm("Are you sure you want to reset ALL seats?")) return;
+  const seatsSnap = await getDocs(collection(db, "shows", "currentShow", "seats"));
+  const updates = [];
+  seatsSnap.forEach(seatDoc => {
+    const seatRef = doc(db, "shows", "currentShow", "seats", seatDoc.id);
+    updates.push(updateDoc(seatRef, {
+      status: "available",
+      lockedBy: null,
+      lockedAt: null
+    }));
+  });
+  await Promise.all(updates);
+  alert("✅ All seats have been reset.");
+});
+
+async function fetchArchivedPayments() {
+  // Fetch Approved
+  const approvedSnap = await getDocs(query(
+    collection(db, "pendingPayments"),
+    where("status", "==", "approved")
+  ));
+
+  approvedContainer.innerHTML = '';
+  approvedSnap.forEach(docSnap => {
+    const data = docSnap.data();
+    const div = document.createElement('div');
+    div.className = 'booking';
+    div.innerHTML = `
+      <h4>✅ Booking ID: ${docSnap.id}</h4>
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Phone:</strong> ${data.phone}</p>
+      <p><strong>Seats:</strong> ${data.seatIds?.join(', ')}</p>
+      <p><strong>Amount:</strong> ₹${data.amount}</p>
+      <button class="deleteBtn">🗑️ Remove</button>
+    `;
+    div.querySelector('.deleteBtn').addEventListener('click', () => deletePayment(docSnap.id, div));
+    approvedContainer.appendChild(div);
+  });
+
+  // Fetch Declined
+  const declinedSnap = await getDocs(query(
+    collection(db, "pendingPayments"),
+    where("status", "==", "declined")
+  ));
+
+  declinedContainer.innerHTML = '';
+  declinedSnap.forEach(docSnap => {
+    const data = docSnap.data();
+    const div = document.createElement('div');
+    div.className = 'booking';
+    div.innerHTML = `
+      <h4>❌ Booking ID: ${docSnap.id}</h4>
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Phone:</strong> ${data.phone}</p>
+      <p><strong>Seats:</strong> ${data.seatIds?.join(', ')}</p>
+      <p><strong>Amount:</strong> ₹${data.amount}</p>
+      <button class="deleteBtn">🗑️ Remove</button>
+    `;
+    div.querySelector('.deleteBtn').addEventListener('click', () => deletePayment(docSnap.id, div));
+    declinedContainer.appendChild(div);
+  });
+}
+
+async function deletePayment(id, element) {
+  if (!confirm(`Delete booking ${id}?`)) return;
+  await deleteDoc(doc(db, "pendingPayments", id));
+  element.remove();
+}
+
+
+    loginBtn.addEventListener('click', async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        alert("Login failed: " + err.message);
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await signOut(auth);
+      bookingsContainer.innerHTML = "<p>Logged out.</p>";
+      loginBtn.style.display = "block";
+      logoutBtn.style.display = "none";
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        if (user.email !== "teja_2022bece043@nitsri.ac.in") {
+          alert("Access Denied: You are not the admin.");
+          bookingsContainer.innerHTML = "<p>Access Denied.</p>";
+          loginBtn.style.display = "none";
+          logoutBtn.style.display = "block";
+          return;
+        }
+
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "block";
+        fetchPendingPayments();
+        fetchArchivedPayments();
+
+      } else {
+        bookingsContainer.innerHTML = "<p>Please sign in to access admin features.</p>";
+        loginBtn.style.display = "block";
+        logoutBtn.style.display = "none";
+      }
+    });
+
+    async function fetchPendingPayments() {
+      const q = query(collection(db, "pendingPayments"), where("status", "==", "awaiting_approval"));
+      const snapshot = await getDocs(q);
+      bookingsContainer.innerHTML = '';
+
+      if (snapshot.empty) {
+        bookingsContainer.innerHTML = "<p>No pending approvals.</p>";
+        return;
+      }
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'booking';
+        div.innerHTML = `
+          <h4>Booking ID: ${docSnap.id}</h4>
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Phone:</strong> ${data.phone}</p>
+          <p><strong>Seats:</strong> ${data.seatIds.join(', ')}</p>
+          <p><strong>Amount:</strong> ₹${data.amount}</p>
+          <button class="approveBtn">Approve</button>
+          <button class="declineBtn">Decline</button>
+        `;
+
+        div.querySelector('.approveBtn').addEventListener('click', () =>
+          handleDecision(docSnap.id, data.seatIds, true)
+        );
+        div.querySelector('.declineBtn').addEventListener('click', () =>
+          handleDecision(docSnap.id, data.seatIds, false)
+        );
+
+        bookingsContainer.appendChild(div);
+      });
+    }
+
+    async function handleDecision(bookingId, seatIds, approve) {
+      const seatUpdates = seatIds.map(seatId => {
+        const seatRef = doc(db, "shows", "currentShow", "seats", seatId);
+        return updateDoc(seatRef, {
+          status: approve ? "booked" : "available",
+          lockedBy: null,
+          lockedAt: null
+        });
+      });
+
+      await Promise.all(seatUpdates);
+
+      const bookingRef = doc(db, "pendingPayments", bookingId);
+      await updateDoc(bookingRef, {
+        status: approve ? "approved" : "declined"
+      });
+
+      alert(`Booking ${approve ? "approved" : "declined"}`);
+      fetchPendingPayments();
+    }
+    document.getElementById("releaseSeatBtn").addEventListener("click", async () => {
+  const seatId = document.getElementById("seatIdInput").value.trim();
+  const statusDisplay = document.getElementById("releaseStatus");
+
+  if (!seatId) {
+    statusDisplay.textContent = "⚠️ Please enter a seat ID.";
+    statusDisplay.style.color = "orange";
+    return;
+  }
+
+  try {
+    const seatRef = doc(db, "shows", "currentShow", "seats", seatId);
+    await updateDoc(seatRef, {
+      status: "available",
+      lockedBy: null,
+      lockedAt: null
+    });
+    statusDisplay.textContent = `✅ Seat "${seatId}" has been released.`;
+    statusDisplay.style.color = "green";
+  } catch (error) {
+    console.error("Error releasing seat:", error);
+    statusDisplay.textContent = `❌ Failed to release seat "${seatId}".`;
+    statusDisplay.style.color = "red";
+  }
+});
+
+  </script>
+</body>
+</html>

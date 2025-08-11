@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BookMyNIT - Telugu Shows</title>
+  <meta name="description" content="BookMyNIT is your one-stop solution for booking Telugu movie shows at INOX Srinagar exclusively for NIT Srinagar students. Enjoy a smooth, student-first experience.">
+  <meta name="keywords" content="BookMyNIT, Telugu Shows, INOX Srinagar, NIT Srinagar, Movie Booking">
+  <meta name="author" content="Teja Kodiyala">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.0.4/tsparticles.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="js/index-enhancements.js" defer></script>
+  <style>
+    .shimmer {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-[Inter] dark:bg-gray-900 dark:text-white">
+  <div id="tsparticles"></div>
+  <div id="preloader" class="fixed inset-0 bg-white dark:bg-gray-800 z-50 flex items-center justify-center">
+    <div class="loader shimmer h-12 w-48 rounded"></div>
+  </div>
+  <button id="topBtn" title="Go to top" class="fixed bottom-4 right-4 bg-blue-600 text-white rounded-full px-3 py-2">↑</button>
+
+  <header class="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-xl font-semibold"><span class="text-blue-600">Book</span>MyNIT</h1>
+    <nav class="space-x-4">
+      <a href="index.html" class="hover:underline">Home</a>
+      <a href="show-booking.html" class="hover:underline">Book Tickets</a>
+    </nav>
+    <div class="flex items-center space-x-3">
+      <img id="userPhoto" src="" alt="User Photo" class="h-8 w-8 rounded-full hidden" />
+      <span id="userName" class="font-semibold"></span>
+      <button id="loginBtn" class="bg-blue-600 text-white px-3 py-1 rounded">Login</button>
+      <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 rounded hidden">Logout</button>
+      <button id="darkToggle" class="ml-2 px-2 py-1 text-sm rounded bg-gray-300 dark:bg-gray-600">🌓</button>
+    </div>
+  </header>
+
+  <section class="h-[80vh] bg-cover bg-center flex items-center justify-center text-center text-white relative" style="background-image: url('assets/hero.jpg');">
+    <div class="bg-black bg-opacity-60 p-6 rounded">
+      <h1 id="heroTitle" class="text-3xl font-bold"></h1>
+      <p class="mt-2">Exclusive for NIT Srinagar Students</p>
+      <button id="bookNowBtn" class="mt-4 bg-yellow-500 px-4 py-2 rounded">Book Now</button>
+    </div>
+  </section>
+
+  <section class="p-6 bg-white dark:bg-gray-800 text-center">
+    <h2 class="text-xl font-semibold mb-2">⏳ Countdown to Show Time</h2>
+    <div class="space-x-4 text-lg">
+      <span><strong id="days">00</strong> Days</span>
+      <span><strong id="hours">00</strong> Hrs</span>
+      <span><strong id="minutes">00</strong> Min</span>
+      <span><strong id="seconds">00</strong> Sec</span>
+    </div>
+  </section>
+
+  <section class="p-6" data-aos="fade-up">
+    <h2 class="text-xl font-semibold mb-4">Available Shows</h2>
+    <ul class="mb-4 text-gray-700 dark:text-gray-300">
+      <li><strong>Movie:</strong> COOLIE</li>
+      <li><strong>Date:</strong> Thursday, August 14th, 2025</li>
+      <li><strong>Showtime:</strong> 11:00 AM</li>
+    </ul>
+    <ul class="mb-4">
+      <li>Rs. 350 – Royale Club (Rows A–B)</li>
+      <li>Rs. 290 – Royale (Rows C–E)</li>
+      <li>Rs. 270 – Club (Rows F–H)</li>
+      <li>Rs. 230 – Executive (Rows I–J)</li>
+    </ul>
+    <p class="mb-4">Majority of seats are still open! Grab your spot early for the best view.</p>
+    <button id="bookSeatsBtn" class="bg-green-600 text-white px-4 py-2 rounded" disabled>Book Your Seats</button>
+  </section>
+
+  <section class="p-6 bg-gray-100 dark:bg-gray-700">
+    <h2 class="text-xl font-semibold mb-4">Watch the Official Trailer</h2>
+    <iframe class="w-full h-64" src="https://www.youtube.com/embed/vHk8tqbeq5o?si=V0eBPmyqe88bs9B5" allowfullscreen></iframe>
+  </section>
+
+  <section class="p-6">
+    <h2 class="text-xl font-semibold mb-4">INOX Srinagar - Location</h2>
+    <iframe class="w-full h-64" src="https://www.google.com/maps/embed?..." allowfullscreen></iframe>
+  </section>
+
+  <section class="p-6 bg-gray-100 dark:bg-gray-700">
+    <h2 class="text-xl font-semibold mb-4">What Students Say</h2>
+    <blockquote class="italic">“Super convenient booking! Loved the vibe of watching a Telugu movie with NIT crowd.”</blockquote>
+    <blockquote class="italic mt-2">“Smooth process, and the discounted rates made it even better.”</blockquote>
+  </section>
+
+  <footer class="text-center text-sm p-4 bg-white dark:bg-gray-800 mt-4">
+    <p>&copy; 2025 BookMyNIT | Made by Teja Kodiyala</p>
+    <p>Contact: 9491816263 | teja_2022bece043@nitsri.ac.in</p>
+  </footer>
+
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg max-w-sm w-full">
+      <h3 class="text-lg font-semibold mb-4">Login to Book</h3>
+      <p class="mb-4">Please login using Google to continue.</p>
+      <button id="googleLogin" class="w-full bg-blue-600 text-white px-4 py-2 rounded">Login with Google</button>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow hidden z-50">Logged in successfully!</div>
+
+  <script type="module">
+    import { signInWithPopup, GoogleAuthProvider, getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyDdnckXpVsKdNoVjwN95u4O1ey-eZhZBhg",
+  authDomain: "bookmynitshow-adf83.firebaseapp.com",
+  projectId: "bookmynitshow-adf83",
+  storageBucket: "bookmynitshow-adf83.appspot.com",
+  messagingSenderId: "76671152034",
+  appId: "1:76671152034:web:9dd3e74e668327cd834cfb"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userName = document.getElementById("userName");
+    const userPhoto = document.getElementById("userPhoto");
+    const bookSeatsBtn = document.getElementById("bookSeatsBtn");
+    const darkToggle = document.getElementById("darkToggle");
+    const toast = document.getElementById("toast");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 3000);
+    }
+
+    function updateUserUI(user) {
+      loginBtn.classList.add("hidden");
+      logoutBtn.classList.remove("hidden");
+      userName.textContent = user.displayName;
+      userPhoto.src = user.photoURL || "assets/default-user.png";
+      userPhoto.classList.remove("hidden");
+      bookSeatsBtn.disabled = false;
+    }
+
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) updateUserUI(storedUser);
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      localStorage.removeItem("user");
+      showToast("Logged out successfully!");
+      setTimeout(() => location.reload(), 1000);
+    });
+
+    loginBtn.addEventListener("click", () => {
+      document.getElementById("loginModal").classList.remove("hidden");
+    });
+
+    document.getElementById("googleLogin").addEventListener("click", async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const currentUser = {
+          displayName: result.user.displayName,
+          photoURL: result.user.photoURL
+        };
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        updateUserUI(result.user);
+        document.getElementById("loginModal").classList.add("hidden");
+        showToast("Logged in successfully!");
+      } catch (error) {
+        alert("Login failed: " + error.message);
+      }
+    });
+
+    document.getElementById("bookNowBtn").addEventListener("click", () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user) {
+        window.location.href = "show-booking.html";
+      } else {
+        document.getElementById("loginModal").classList.remove("hidden");
+      }
+    });
+
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+
+    darkToggle.addEventListener("click", () => {
+      document.documentElement.classList.toggle("dark");
+      localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+
+    document.getElementById("preloader").style.display = "none";
+  </script>
+
+  <script>
+    let i = 0;
+    const text = "Special Telugu Show at INOX Srinagar";
+    const speed = 60;
+    function typeWriter() {
+      if (i < text.length) {
+        document.getElementById("heroTitle").innerHTML += text.charAt(i);
+        i++;
+        setTimeout(typeWriter, speed);
+      }
+    }
+    typeWriter();
+    AOS.init({ duration: 1000, once: true });
+  </script>
+</body>
+</html>

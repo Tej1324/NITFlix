@@ -1,0 +1,150 @@
+/* admin.css */
+body {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 40px 20px;
+  color: #333;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+h2, h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 200px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #3498db;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#logoutBtn {
+  background-color: #e74c3c;
+}
+
+#logoutBtn:hover {
+  background-color: #c0392b;
+}
+
+#resetSeatsBtn {
+  background-color: #f39c12;
+  margin-top: 20px;
+}
+
+#resetSeatsBtn:hover {
+  background-color: #e67e22;
+}
+
+#releaseSeatBtn {
+  background-color: #16a085;
+}
+
+#releaseSeatBtn:hover {
+  background-color: #138d75;
+}
+
+#releaseStatus {
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.booking {
+  background-color: #ffffff;
+  padding: 14px 20px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-left: 5px solid #3498db;
+}
+
+.booking h4 {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+.booking p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.approveBtn {
+  background-color: #2ecc71;
+}
+
+.approveBtn:hover {
+  background-color: #27ae60;
+}
+
+.declineBtn {
+  background-color: #e74c3c;
+}
+
+.declineBtn:hover {
+  background-color: #c0392b;
+}
+
+.deleteBtn {
+  background-color: #bdc3c7;
+  margin-top: 8px;
+}
+
+.deleteBtn:hover {
+  background-color: #95a5a6;
+}
+
+#bookingsContainer,
+#approvedContainer,
+#declinedContainer {
+  margin-top: 15px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 20px 12px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .booking {
+    padding: 12px;
+  }
+}
