@@ -22,13 +22,16 @@
     <p id="userInfo"></p>
 <div id="seatWrapperContainer">
   <div id="seatWrapper"></div>
-</div>
-    <div>SCREEN THIS WAY</div>
+  </div>
 
-    <div class="legend">
-      <div class="legend-item"><div class="seat"></div> Available</div>
-      <div class="legend-item"><div class="seat selected"></div> Selected</div>
-      <div class="legend-item"><div class="seat booked"></div> Booked</div>
+<div id="screen-indicator">SCREEN THIS WAY</div>
+
+<div class="legend horizontal">
+  <div class="legend-item"><div class="seat available"></div> Available</div>
+  <div class="legend-item"><div class="seat selected"></div> Selected</div>
+  <div class="legend-item"><div class="seat booked"></div> Booked</div>
+</div>
+
     </div>
     <div id="controls">
       <button id="confirmBtn">Confirm Booking</button>
@@ -37,16 +40,15 @@
   <footer><p>&copy; 2025 BookMyNIT. All rights reserved.</p></footer>
 
   <script type="module">
-    import { db, auth, doc, getDoc, setDoc, updateDoc, collection, getDocs, onAuthStateChanged, serverTimestamp, runTransaction } from "./js/firebase.js";
+    import { db, auth, doc, getDoc, setDoc, updateDoc, collection, getDocs, onAuthStateChanged, serverTimestamp } from "./js/firebase.js";
 
     const seatWrapper = document.getElementById("seatWrapper");
 const seatWrapperContainer = document.getElementById("seatWrapperContainer");
     const confirmBtn = document.getElementById("confirmBtn");
     let selectedSeats = [];
     let currentUser = null;
-    let seatTimers = {}; // Track timeout timers for each seat
 
-     const seatLayout = [
+    const seatLayout = [
       {
         title: '₹450 ROYALE CLUB',
         priceKey: 'ROYALE CLUB',
@@ -82,7 +84,6 @@ const seatWrapperContainer = document.getElementById("seatWrapperContainer");
         }
       }
     ];
-
 
     let seatStatusMap = {}; // seatId -> booked/locked
 
@@ -148,18 +149,14 @@ renderLayout();
           btn.dataset.priceKey = section.priceKey;
 
           const status = seatStatusMap[seatId];
-          const lockedByCurrentUser = seatStatusMap[seatId + '_by'] === currentUser?.uid;
 
-          if (status === 'locked' && !lockedByCurrentUser) {
+          if (status === 'locked') {
             btn.classList.add('locked');
             btn.disabled = true;
-            btn.title = "This seat is temporarily locked by another user.";
-          } else if (status === 'locked' && lockedByCurrentUser) {
-            // Keep it interactive so user can deselect/unlock
-            btn.classList.add('selected');
-            btn.disabled = false;
-            btn.title = "You have locked this seat. Click to deselect.";
-            btn.addEventListener('click', () => toggleSeat(btn));
+            const lockedByCurrentUser = seatStatusMap[seatId + '_by'] === currentUser.uid;
+            btn.title = lockedByCurrentUser
+              ? "You have locked this seat."
+              : "This seat is temporarily locked by another user.";
           } else if (status === 'booked') {
             btn.classList.add('booked');
             btn.disabled = true;
@@ -185,103 +182,18 @@ renderLayout();
 }
 
 
-    async function toggleSeat(btn) {
+    function toggleSeat(btn) {
   const seatId = btn.dataset.seat;
   const priceKey = btn.dataset.priceKey;
 
   if (btn.classList.contains("selected")) {
-    // Deselect locally and unlock in database
+    // Deselect locally
     btn.classList.remove("selected");
     selectedSeats = selectedSeats.filter(s => s.id !== seatId);
-    
-    // Clear the timeout timer for this seat
-    if (seatTimers[seatId]) {
-      clearTimeout(seatTimers[seatId]);
-      delete seatTimers[seatId];
-    }
-    
-    // Unlock the seat in database with safety check
-    try {
-      const seatRef = doc(db, "shows", "currentShow", "seats", seatId);
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(seatRef);
-        if (!snap.exists()) return;
-        const data = snap.data();
-        if (data.status === 'locked' && data.lockedBy === currentUser.uid) {
-          tx.update(seatRef, {
-            status: "available",
-            lockedBy: null,
-            lockedAt: null
-          });
-        }
-      });
-    } catch (err) {
-      console.error("Failed to unlock seat:", err);
-    }
   } else {
-    const seatRef = doc(db, "shows", "currentShow", "seats", seatId);
-    // Select locally and attempt to lock in database atomically
+    // Select locally
     btn.classList.add("selected");
     selectedSeats.push({ id: seatId, priceKey });
-    
-    // Lock the seat immediately in database using transaction
-    try {
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(seatRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.status === 'available' || data.status === undefined) {
-            tx.update(seatRef, {
-              status: "locked",
-              lockedBy: currentUser.uid,
-              lockedAt: serverTimestamp()
-            });
-          } else {
-            throw new Error("Seat no longer available");
-          }
-        } else {
-          // In case documents are not pre-created
-          tx.set(seatRef, {
-            status: "locked",
-            lockedBy: currentUser.uid,
-            lockedAt: serverTimestamp()
-          });
-        }
-      });
-      
-      // Set a 10-minute timeout to auto-unlock the seat if not booked
-      seatTimers[seatId] = setTimeout(async () => {
-        try {
-          // Safely unlock via transaction if still locked by this user
-          await runTransaction(db, async (tx) => {
-            const s = await tx.get(seatRef);
-            if (s.exists()) {
-              const d = s.data();
-              if (d.status === 'locked' && d.lockedBy === currentUser.uid) {
-                tx.update(seatRef, {
-                  status: "available",
-                  lockedBy: null,
-                  lockedAt: null
-                });
-              }
-            }
-          });
-          // Remove from selected seats if still selected
-          selectedSeats = selectedSeats.filter(s => s.id !== seatId);
-          alert(`Seat ${seatId} has been automatically unlocked due to timeout. Please reselect if needed.`);
-        } catch (err) {
-          console.error("Failed to auto-unlock seat:", err);
-        }
-        delete seatTimers[seatId];
-      }, 10 * 60 * 1000); // 10 minutes
-      
-    } catch (err) {
-      console.error("Failed to lock seat:", err);
-      // If locking fails, remove from selection
-      btn.classList.remove("selected");
-      selectedSeats = selectedSeats.filter(s => s.id !== seatId);
-      alert("Failed to lock seat. Please try again.");
-    }
   }
 
   // Optional: update price/seat count UI
@@ -295,70 +207,27 @@ renderLayout();
     return;
   }
 
-  // Seats are already locked when selected, so just proceed to payment
-  sessionStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
-  
-  // Clear all timers since user is proceeding to payment
-  Object.values(seatTimers).forEach(timer => clearTimeout(timer));
-  seatTimers = {};
-  
-  window.location.href = "payment.html";
-});
-
-// Clean up locked seats when user leaves the page without booking
-window.addEventListener('beforeunload', async () => {
-  // Clear all timers
-  Object.values(seatTimers).forEach(timer => clearTimeout(timer));
-  
-  // Unlock all selected seats (safely)
-  for (const seat of selectedSeats) {
-    try {
+  try {
+    for (const seat of selectedSeats) {
       const seatRef = doc(db, "shows", "currentShow", "seats", seat.id);
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(seatRef);
-        if (!snap.exists()) return;
-        const data = snap.data();
-        if (data.status === 'locked' && data.lockedBy === currentUser?.uid) {
-          tx.update(seatRef, {
-            status: "available",
-            lockedBy: null,
-            lockedAt: null
-          });
-        }
+      await updateDoc(seatRef, {
+        status: "locked",
+        lockedBy: currentUser.uid,
+        lockedAt: serverTimestamp()
       });
-    } catch (err) {
-      console.error("Failed to unlock seat on page unload:", err);
     }
+    const seatIds = Array.from(selectedSeats).map(seat => seat.id);
+    sessionStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
+    sessionStorage.setItem("ticketCount", selectedSeats.length);
+    window.location.href = "payment.html";
+  } catch (err) {
+    alert("Failed to lock some seats. Please try again.");
+    console.error(err);
   }
 });
 
-});
-let isDown = false;
-let startX;
-let scrollLeft;
 
-seatWrapperContainer.addEventListener('mousedown', (e) => {
-  isDown = true;
-  seatWrapperContainer.classList.add('active');
-  startX = e.pageX - seatWrapperContainer.offsetLeft;
-  scrollLeft = seatWrapperContainer.scrollLeft;
 });
-seatWrapperContainer.addEventListener('mouseleave', () => {
-  isDown = false;
-  seatWrapperContainer.classList.remove('active');
-});
-seatWrapperContainer.addEventListener('mouseup', () => {
-  isDown = false;
-  seatWrapperContainer.classList.remove('active');
-});
-seatWrapperContainer.addEventListener('mousemove', (e) => {
-  if (!isDown) return;
-  e.preventDefault();
-  const x = e.pageX - seatWrapperContainer.offsetLeft;
-  const walk = (x - startX) * 1.5; // scroll speed
-  seatWrapperContainer.scrollLeft = scrollLeft - walk;
-});
-
 
   </script>
 </body>
