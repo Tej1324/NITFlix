@@ -138,24 +138,4 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 }
 
-  // Custom Cursor
-  const cursor = document.createElement('div');
-  cursor.id = 'customCursor';
-  document.body.appendChild(cursor);
-
-  cursor.style.position = 'fixed';
-  cursor.style.zIndex = '10000';
-  cursor.style.width = '12px';
-  cursor.style.height = '12px';
-  cursor.style.borderRadius = '50%';
-  cursor.style.background = 'rgba(255, 255, 255, 0.7)';
-  cursor.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.3)';
-  cursor.style.pointerEvents = 'none';
-  cursor.style.transform = 'translate(-50%, -50%)';
-  cursor.style.transition = 'transform 0.1s ease-out';
-
-  window.addEventListener('mousemove', e => {
-    cursor.style.left = e.clientX + 'px';
-    cursor.style.top = e.clientY + 'px';
-  });
 });
