@@ -40,7 +40,8 @@
   <footer><p>&copy; 2025 BookMyNIT. All rights reserved.</p></footer>
 
   <script type="module">
-    import { db, auth, doc, getDoc, setDoc, updateDoc, collection, getDocs, onAuthStateChanged, serverTimestamp } from "./js/firebase.js";
+    import { db, auth, doc, getDoc, setDoc, updateDoc, collection, getDocs, onAuthStateChanged, serverTimestamp,runTransaction
+ } from "./js/firebase.js";
 
     const seatWrapper = document.getElementById("seatWrapper");
 const seatWrapperContainer = document.getElementById("seatWrapperContainer");
@@ -199,32 +200,53 @@ renderLayout();
   // Optional: update price/seat count UI
   updateSummary?.(); // only call if function exists
 }
-
-
-  confirmBtn.addEventListener("click", async () => {
+confirmBtn.addEventListener("click", async () => {
   if (selectedSeats.length === 0) {
     alert("Select at least one seat.");
     return;
   }
 
-  try {
-    for (const seat of selectedSeats) {
-      const seatRef = doc(db, "shows", "currentShow", "seats", seat.id);
-      await updateDoc(seatRef, {
+ try {
+  await runTransaction(db, async (transaction) => {
+    const seatRefs = selectedSeats.map(seat =>
+      doc(db, "shows", "currentShow", "seats", seat.id)
+    );
+
+    // 1️⃣ Read all seats first
+    const seatSnaps = [];
+    for (const seatRef of seatRefs) {
+      const seatSnap = await transaction.get(seatRef);
+      if (!seatSnap.exists()) {
+        throw new Error(`Seat ${seatRef.id} does not exist.`);
+      }
+      const data = seatSnap.data();
+      if (data.status === "booked" || data.status === "locked") {
+        throw new Error(`Seat ${seatRef.id} is no longer available.`);
+      }
+      seatSnaps.push(seatSnap);
+    }
+
+    // 2️⃣ Write updates only after all reads are done
+    for (const seatRef of seatRefs) {
+      transaction.update(seatRef, {
         status: "locked",
         lockedBy: currentUser.uid,
-        lockedAt: serverTimestamp()
+        lockedAt: serverTimestamp(),
       });
     }
-    const seatIds = Array.from(selectedSeats).map(seat => seat.id);
+  });
+
+    // ✅ If all seats were locked successfully
     sessionStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
     sessionStorage.setItem("ticketCount", selectedSeats.length);
     window.location.href = "payment.html";
   } catch (err) {
-    alert("Failed to lock some seats. Please try again.");
+    alert(err.message || "Failed to lock some seats. Please try again.");
     console.error(err);
+    renderLayout(); // refresh to show correct status
   }
 });
+
 
 
 });
