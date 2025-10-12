@@ -34,7 +34,7 @@
       updateDoc,
       collection,
       getDocs,
-      deleteDoc, // ✅ add this line
+      deleteDoc, 
       query,
       where,
       onAuthStateChanged
@@ -245,5 +245,45 @@ async function deletePayment(id, element) {
 });
 
   </script>
+
+<div style="margin: 20px 0;">
+  <button onclick="removeAll('approvedBookings')">Remove All Approved Bookings</button>
+  <button onclick="removeAll('pendingPayments')">Remove All Pending Bookings</button>
+  <button onclick="removeAll('declinedBookings')">Remove All Declined Bookings</button>
+</div>
+
+<script>
+  function removeAll(containerType) {
+    if (!confirm(`Are you sure you want to remove ALL from ${containerType}?`)) return;
+
+    let container;
+
+    switch(containerType) {
+      case 'approvedBookings':
+        container = document.getElementById('approvedContainer');
+        break;
+      case 'pendingPayments':
+        container = document.getElementById('bookingsContainer');
+        break;
+      case 'declinedBookings':
+        container = document.getElementById('declinedContainer');
+        break;
+      default:
+        alert('Unknown container type');
+        return;
+    }
+
+    if (container) {
+      container.innerHTML = ''; 
+      alert(`All ${containerType} removed from admin view.`);
+    }
+  }
+
+  window.removeAll = removeAll;
+</script>
+
+
+
+
 </body>
 </html>

@@ -20,14 +20,14 @@
       <div class="ticket-count"><span id="ticketCount">2</span> Tickets</div>
     </div>
 
-    <h2 id="movieTitle">COOLIE (A) - TELUGU </h2>
+    <h2 id="movieTitle"> OG (A)</h2>
     <p>TELUGU, 2D</p>
-    <p>INOX: Srinagar Shivpora (SCREEN 3)</p>
+    <p>INOX: Srinagar Shivpora (SCREEN 2)</p>
     <p>M-Ticket</p>
 
     <div class="seat-show-details">
       <p><strong>Selected Seats:</strong> <span id="selectedSeatsDisplay">Loading...</span></p>
-      <p id="showDateTime">Thu, 14 Aug, 2025<br>02:00 PM</p>
+      <p id="showDateTime">Thu, 25 Sep, 2025<br>04:00 PM</p>
     </div>
   </div>
 </div>
@@ -50,9 +50,9 @@
     <p>Scan QR using UPI app</p>
     <img src="qr-code.png" alt="UPI QR Code" class="qr" />
     <div class="bank-details">
-      <p><strong>Account Name:</strong> XXXXXXXXXXXX</p>
-      <p><strong>Account Number:</strong> XXXXXXXXXXXX</p>
-      <p><strong>IFSC:</strong> XXXXXXXXXX</p>
+      <p><strong>Account Name:</strong> Your Name</p>
+      <p><strong>Account Number:</strong> 1234567890</p>
+      <p><strong>IFSC:</strong> ABCD0123456</p>
     </div>
     <div id="countdown">Time remaining: 05:00</div>
 
@@ -84,10 +84,10 @@
   }
 
   const seatPriceMap = {
-    'ROYALE CLUB': 500,
-    'ROYALE': 360,
-    'CLUB': 330,
-    'EXECUTIVE': 330
+    'ROYALE CLUB': 400,
+    'ROYALE': 300,
+    'CLUB': 250,
+    'EXECUTIVE': 220
   };
 
   let total = 0;
@@ -162,6 +162,10 @@ document.getElementById("paymentDoneBtn").addEventListener("click", async () => 
     alert("Something went wrong. Try again.");
   }
 });
+document.addEventListener("DOMContentLoaded", () => {
+  const ticketCount = sessionStorage.getItem("ticketCount") || 0;
+  document.getElementById("ticketCount").textContent = ticketCount;
+});
 
 </script>
 <script>
@@ -173,7 +177,54 @@ document.getElementById("paymentDoneBtn").addEventListener("click", async () => 
     grid.appendChild(span);
   }
 </script>
+<script type="module">
+  import { db, doc, updateDoc } from "./js/firebase.js";
 
+  let countdownTime = 5 * 60; // 5 minutes in seconds
+  const countdownElement = document.getElementById("countdown");
+
+  async function releaseSeats() {
+    try {
+      const selectedSeats = JSON.parse(sessionStorage.getItem("selectedSeats")) || [];
+      for (const seat of selectedSeats) {
+        const seatRef = doc(db, "shows", "currentShow", "seats", seat.id);
+        await updateDoc(seatRef, {
+          status: "available",
+          lockedBy: null,
+          lockedAt: null
+        });
+      }
+    } catch (err) {
+      console.error("Error releasing seats:", err);
+    }
+  }
+
+  function updateCountdown() {
+    const minutes = Math.floor(countdownTime / 60);
+    const seconds = countdownTime % 60;
+    countdownElement.textContent =
+      `Time remaining: ${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+    if (countdownTime > 0) {
+      countdownTime--;
+    } else {
+      clearInterval(timer);
+
+      // 🔓 Release seats
+      releaseSeats().then(() => {
+        // 🧹 Clear session storage
+        sessionStorage.removeItem("selectedSeats");
+        sessionStorage.removeItem("ticketCount");
+
+        // ⏩ Redirect to index with timeout message
+        window.location.href = "index.html?timeout=true";
+      });
+    }
+  }
+
+  updateCountdown(); // Initial call
+  const timer = setInterval(updateCountdown, 1000);
+</script>
 
 </body>
 </html>

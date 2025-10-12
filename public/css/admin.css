@@ -1,43 +1,55 @@
-/* admin.css */
+/* ===================== Base Styles ===================== */
 body {
   font-family: 'Segoe UI', Roboto, sans-serif;
-  background-color: #f5f7fa;
+  background-color: #f4f6fa;
   margin: 0;
-  padding: 40px 20px;
+  padding: 30px 20px;
   color: #333;
-  max-width: 900px;
+  max-width: 1100px;
   margin-left: auto;
   margin-right: auto;
 }
 
 h2, h3 {
   color: #2c3e50;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 hr {
   border: none;
   border-top: 1px solid #ccc;
+  margin: 30px 0;
 }
 
+/* ===================== Inputs ===================== */
 input[type="text"] {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  width: 200px;
+  width: 220px;
+  margin-right: 10px;
   margin-bottom: 10px;
+  outline: none;
+  transition: border-color 0.2s ease;
 }
 
+input[type="text"]:focus {
+  border-color: #3498db;
+}
+
+/* ===================== Buttons ===================== */
 button {
   background-color: #3498db;
   border: none;
   color: white;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+  margin-top: 6px;
 }
 
 button:hover {
@@ -49,6 +61,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Specific Buttons */
 #logoutBtn {
   background-color: #e74c3c;
 }
@@ -59,7 +72,6 @@ button:disabled {
 
 #resetSeatsBtn {
   background-color: #f39c12;
-  margin-top: 20px;
 }
 
 #resetSeatsBtn:hover {
@@ -74,24 +86,41 @@ button:disabled {
   background-color: #138d75;
 }
 
+.bulkBtn {
+  background-color: #9b59b6;
+}
+
+.bulkBtn:hover {
+  background-color: #8e44ad;
+}
+
+/* ===================== Status Text ===================== */
 #releaseStatus {
   margin-top: 6px;
   font-weight: 600;
   font-size: 14px;
 }
 
+/* ===================== Booking Cards ===================== */
 .booking {
   background-color: #ffffff;
-  padding: 14px 20px;
-  margin-bottom: 15px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
   border-left: 5px solid #3498db;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .booking h4 {
   margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+  font-size: 16px;
 }
 
 .booking p {
@@ -99,6 +128,7 @@ button:disabled {
   font-size: 14px;
 }
 
+/* Booking Buttons */
 .approveBtn {
   background-color: #2ecc71;
 }
@@ -117,26 +147,36 @@ button:disabled {
 
 .deleteBtn {
   background-color: #bdc3c7;
-  margin-top: 8px;
 }
 
 .deleteBtn:hover {
   background-color: #95a5a6;
 }
 
+/* ===================== Containers ===================== */
 #bookingsContainer,
 #approvedContainer,
 #declinedContainer {
   margin-top: 15px;
 }
 
-@media (max-width: 600px) {
+/* Bulk Actions Container */
+.bulk-actions {
+  margin: 25px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ===================== Responsive ===================== */
+@media (max-width: 700px) {
   body {
     padding: 20px 12px;
   }
 
   input[type="text"] {
     width: 100%;
+    margin-bottom: 10px;
   }
 
   button {
@@ -145,6 +185,10 @@ button:disabled {
   }
 
   .booking {
-    padding: 12px;
+    padding: 14px 16px;
+  }
+
+  .bulk-actions {
+    flex-direction: column;
   }
 }

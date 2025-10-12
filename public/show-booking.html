@@ -6,254 +6,344 @@
   <title>Book Seats - BookMyNIT</title>
   <link rel="stylesheet" href="css/show-booking.css">
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
-<!-- Or use PNG -->
-<link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      display: flex;
+      flex: 1;
+      gap: 20px;
+    }
+
+    #seatWrapperContainer {
+      flex: 3;
+    }
+
+    #summaryBox {
+      flex: 1;
+      background: #0d0d0d;
+      color: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+
+    #summaryBox h3 {
+      margin-bottom: 12px;
+      font-size: 18px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 8px;
+    }
+
+    .summary-row {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
     .seat.booked, .seat.locked {
       background-color: #aaa !important;
       pointer-events: none;
+    }
+
+    #controls {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <header><h1><span>Book</span>MyNIT - Seat Booking</h1></header>
+
   <main>
-    <p id="userInfo"></p>
-<div id="seatWrapperContainer">
-  <div id="seatWrapper"></div>
-  </div>
+    <!-- Seat Layout -->
+    <div id="seatWrapperContainer">
+      <p id="userInfo"></p>
+      <div id="seatWrapper"></div>
+      <div id="screen-indicator">SCREEN THIS WAY</div>
 
-<div id="screen-indicator">SCREEN THIS WAY</div>
+      <div class="legend horizontal">
+        <div class="legend-item"><div class="seat available"></div> Available</div>
+        <div class="legend-item"><div class="seat selected"></div> Selected</div>
+        <div class="legend-item"><div class="seat booked"></div> Booked</div>
+      </div>
 
-<div class="legend horizontal">
-  <div class="legend-item"><div class="seat available"></div> Available</div>
-  <div class="legend-item"><div class="seat selected"></div> Selected</div>
-  <div class="legend-item"><div class="seat booked"></div> Booked</div>
-</div>
-
+      <div id="controls">
+        <button id="confirmBtn">Confirm Booking</button>
+      </div>
     </div>
-    <div id="controls">
-      <button id="confirmBtn">Confirm Booking</button>
+
+    <!-- Payment Summary -->
+    <div id="summaryBox">
+      <h3>Payment Summary</h3>
+      <div class="summary-row">Tickets: <span id="ticketCount">0</span></div>
+      <div class="summary-row">Seats: <span id="seatList">None</span></div>
+      <div class="summary-row">Total: ₹<span id="totalAmount">0</span></div>
     </div>
   </main>
+
   <footer><p>&copy; 2025 BookMyNIT. All rights reserved.</p></footer>
 
   <script type="module">
-   import { 
-  db, auth, doc, getDoc, setDoc, updateDoc, collection, 
-  getDocs, onAuthStateChanged, serverTimestamp, runTransaction 
-} from "./js/firebase.js";
-
+    import {
+      db, auth, doc, getDoc, setDoc, updateDoc, collection,
+      getDocs, onAuthStateChanged, serverTimestamp, runTransaction, onSnapshot
+    } from "./js/firebase.js";
 
     const seatWrapper = document.getElementById("seatWrapper");
-const seatWrapperContainer = document.getElementById("seatWrapperContainer");
     const confirmBtn = document.getElementById("confirmBtn");
+
     let selectedSeats = [];
     let currentUser = null;
 
+    // seat layout + prices
     const seatLayout = [
-      {
-        title: '₹500 ROYALE CLUB',
-        priceKey: 'ROYALE CLUB',
-        rows: {
-          A: [1,2,3,4,5,6,7,8,9,10,11]        }
-      },
-      {
-        title: '₹360 ROYALE',
-        priceKey: 'ROYALE',
+      { title: '₹500 ROYALE CLUB', priceKey: 'ROYALE CLUB', price: 500,
+        rows: { A: [1,2,3,4,5,6,7,8,9,10,11] } },
+      { title: '₹360 ROYALE', priceKey: 'ROYALE', price: 360,
         rows: {
           B: [1,2,3,4,5,6,7,8,9,12,13,14],
           C: [1,2,3,4,5,6,7,8,9,12,13,14],
           D: [1,2,3,4,5,6,7,8,9,12,13,14]
-        }
-      },
-      {
-        title: '₹330 CLUB',
-        priceKey: 'CLUB',
+        }},
+      { title: '₹330 CLUB', priceKey: 'CLUB', price: 330,
         rows: {
           E: [1,2,3,4,5,6,7,8,9,14],
           F: [1,2,3,4,5,6,7,8,9,14],
           G: [1,2,3,4,5,6,7,8,9,14],
           H: [1,2,3,4,5,6,7,8,9,12,13,14],
           I: [1,2,3,4,5,6,7,8,9,12,13,14]
-        }
-      },
-      {
-        title: '₹330 EXECUTIVE',
-        priceKey: 'EXECUTIVE',
+        }},
+      { title: '₹330 EXECUTIVE', priceKey: 'EXECUTIVE', price: 330,
         rows: {
           J: [1,2,3,4,5,6,7,8,9,12,13,14],
           K: [1,2,3,4,5,6,7,8,9,12,13,14]
-        }
-      }
+        }}
     ];
 
-    let seatStatusMap = {}; // seatId -> booked/locked
+    let seatStatusMap = {};
 
-   import { onSnapshot } from "./js/firebase.js";
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return window.location.href = "login.html";
+      currentUser = user;
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) return window.location.href = "login.html";
-  currentUser = user;
-  // Realtime listener to all seats
-  onSnapshot(collection(db, "shows", "currentShow", "seats"), (snapshot) => {
-  console.log("Snapshot triggered!");
-  seatStatusMap = {}; // Reset before rebuild
+      onSnapshot(collection(db, "shows", "currentShow", "seats"), (snapshot) => {
+        seatStatusMap = {};
+        snapshot.forEach(seatDoc => {
+          const data = seatDoc.data();
+          const seatId = seatDoc.id;
 
-  snapshot.forEach(seatDoc => {
-    const data = seatDoc.data();
-    const seatId = seatDoc.id;
-
-    if (data.status === "locked") {
-      seatStatusMap[seatId] = "locked";
-      seatStatusMap[seatId + "_by"] = data.lockedBy;
-    } else if (data.status === "booked") {
-      seatStatusMap[seatId] = "booked";
-    } else {
-      seatStatusMap[seatId] = "available";
-    }
-  });
-
-  console.log("Rendering with seatStatusMap:", seatStatusMap);
-  renderLayout();
-});
-
-
-console.log("Rendering with seatStatusMap:", seatStatusMap);
-renderLayout();
-
-
-
-
-          function renderLayout() {
-  seatWrapper.innerHTML = ""; // 💡 Don't forget to clear the layout before re-rendering
-
-  seatLayout.forEach(section => {
-    const sectionDiv = document.createElement('div');
-    sectionDiv.className = 'section';
-
-    const title = document.createElement('h3');
-    title.textContent = section.title;
-    sectionDiv.appendChild(title);
-
-    for (const row in section.rows) {
-      const rowDiv = document.createElement('div');
-      rowDiv.className = 'row';
-      const seatNumbers = section.rows[row];
-      const maxSeatNum = Math.max(...seatNumbers);
-
-      for (let i = 1; i <= maxSeatNum; i++) {
-        if (seatNumbers.includes(i)) {
-          const seatId = `${row}${i}`;
-          const btn = document.createElement('button');
-          btn.className = 'seat';
-          btn.textContent = i.toString().padStart(2, '0');
-          btn.dataset.seat = seatId;
-          btn.dataset.priceKey = section.priceKey;
-
-          const status = seatStatusMap[seatId];
-
-          if (status === 'locked') {
-            btn.classList.add('locked');
-            btn.disabled = true;
-            const lockedByCurrentUser = seatStatusMap[seatId + '_by'] === currentUser.uid;
-            btn.title = lockedByCurrentUser
-              ? "You have locked this seat."
-              : "This seat is temporarily locked by another user.";
-          } else if (status === 'booked') {
-            btn.classList.add('booked');
-            btn.disabled = true;
-            btn.title = "This seat is booked.";
+          if (data.status === "locked") {
+            seatStatusMap[seatId] = "locked";
+            seatStatusMap[seatId + "_by"] = data.lockedBy;
+          } else if (data.status === "booked") {
+            seatStatusMap[seatId] = "booked";
           } else {
-            btn.classList.remove('locked', 'booked');
-            btn.disabled = false;
-            btn.title = "Click to select";
-            btn.addEventListener('click', () => toggleSeat(btn));
+            seatStatusMap[seatId] = "available";
           }
+        });
+        renderLayout();
+      });
+    });
 
-          rowDiv.appendChild(btn);
-        } else {
-          const gap = document.createElement('div');
-          gap.className = 'seat gap';
-          rowDiv.appendChild(gap);
+    function renderLayout() {
+      seatWrapper.innerHTML = "";
+      seatLayout.forEach(section => {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'section';
+
+        const title = document.createElement('h3');
+        title.textContent = section.title;
+        sectionDiv.appendChild(title);
+
+        for (const row in section.rows) {
+          const rowDiv = document.createElement('div');
+          rowDiv.className = 'row';
+          const seatNumbers = section.rows[row];
+          const maxSeatNum = Math.max(...seatNumbers);
+
+          for (let i = 1; i <= maxSeatNum; i++) {
+            if (seatNumbers.includes(i)) {
+              const seatId = `${row}${i}`;
+              const btn = document.createElement('button');
+              btn.className = 'seat';
+              btn.textContent = i.toString().padStart(2, '0');
+              btn.dataset.seat = seatId;
+              btn.dataset.priceKey = section.priceKey;
+              btn.dataset.price = section.price;
+
+              const status = seatStatusMap[seatId];
+              if (status === 'locked') {
+                btn.classList.add('locked');
+                btn.disabled = true;
+                const lockedByCurrentUser = seatStatusMap[seatId + '_by'] === currentUser.uid;
+                btn.title = lockedByCurrentUser
+                  ? "You have locked this seat."
+                  : "This seat is temporarily locked by another user.";
+              } else if (status === 'booked') {
+                btn.classList.add('booked');
+                btn.disabled = true;
+                btn.title = "This seat is booked.";
+              } else {
+                btn.classList.remove('locked', 'booked');
+                btn.disabled = false;
+                btn.title = "Click to select";
+                btn.addEventListener('click', () => toggleSeat(btn));
+              }
+              rowDiv.appendChild(btn);
+            } else {
+              const gap = document.createElement('div');
+              gap.className = 'seat gap';
+              rowDiv.appendChild(gap);
+            }
+          }
+          sectionDiv.appendChild(rowDiv);
         }
-      }
-      sectionDiv.appendChild(rowDiv);
-    }
-    seatWrapper.appendChild(sectionDiv);
-  });
-}
-
-
-    function toggleSeat(btn) {
-  const seatId = btn.dataset.seat;
-  const priceKey = btn.dataset.priceKey;
-
-  if (btn.classList.contains("selected")) {
-    // Deselect locally
-    btn.classList.remove("selected");
-    selectedSeats = selectedSeats.filter(s => s.id !== seatId);
-  } else {
-    // Select locally
-    btn.classList.add("selected");
-    selectedSeats.push({ id: seatId, priceKey });
-  }
-
-  // Optional: update price/seat count UI
-  updateSummary?.(); // only call if function exists
-}
-confirmBtn.addEventListener("click", async () => {
-  if (selectedSeats.length === 0) {
-    alert("Select at least one seat.");
-    return;
-  }
-
- try {
-  await runTransaction(db, async (transaction) => {
-    const seatRefs = selectedSeats.map(seat =>
-      doc(db, "shows", "currentShow", "seats", seat.id)
-    );
-
-    // 1️⃣ Read all seats first
-    const seatSnaps = [];
-    for (const seatRef of seatRefs) {
-      const seatSnap = await transaction.get(seatRef);
-      if (!seatSnap.exists()) {
-        throw new Error(`Seat ${seatRef.id} does not exist.`);
-      }
-      const data = seatSnap.data();
-      if (data.status === "booked" || data.status === "locked") {
-        throw new Error(`Seat ${seatRef.id} is no longer available.`);
-      }
-      seatSnaps.push(seatSnap);
-    }
-
-    // 2️⃣ Write updates only after all reads are done
-    for (const seatRef of seatRefs) {
-      transaction.update(seatRef, {
-        status: "locked",
-        lockedBy: currentUser.uid,
-        lockedAt: serverTimestamp(),
+        seatWrapper.appendChild(sectionDiv);
       });
     }
+
+    function toggleSeat(btn) {
+      const seatId = btn.dataset.seat;
+      const priceKey = btn.dataset.priceKey;
+      const price = parseInt(btn.dataset.price);
+
+      if (btn.classList.contains("selected")) {
+        btn.classList.remove("selected");
+        selectedSeats = selectedSeats.filter(s => s.id !== seatId);
+      } else {
+        btn.classList.add("selected");
+        selectedSeats.push({ id: seatId, priceKey, price });
+      }
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const ticketCount = selectedSeats.length;
+      const seatList = selectedSeats.map(s => s.id).join(", ") || "None";
+      const totalAmount = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+
+      document.getElementById("ticketCount").textContent = ticketCount;
+      document.getElementById("seatList").textContent = seatList;
+      document.getElementById("totalAmount").textContent = totalAmount;
+    }
+
+    confirmBtn.addEventListener("click", async () => {
+      if (selectedSeats.length === 0) {
+        alert("Select at least one seat.");
+        return;
+      }
+      try {
+        await runTransaction(db, async (transaction) => {
+          const seatRefs = selectedSeats.map(seat =>
+            doc(db, "shows", "currentShow", "seats", seat.id)
+          );
+          const seatSnaps = [];
+          for (const seatRef of seatRefs) {
+            const seatSnap = await transaction.get(seatRef);
+            if (!seatSnap.exists()) throw new Error(`Seat ${seatRef.id} does not exist.`);
+            const data = seatSnap.data();
+            if (data.status === "booked" || data.status === "locked") {
+              throw new Error(`Seat ${seatRef.id} is no longer available.`);
+            }
+            seatSnaps.push(seatSnap);
+          }
+          for (const seatRef of seatRefs) {
+            transaction.update(seatRef, {
+              status: "locked",
+              lockedBy: currentUser.uid,
+              lockedAt: serverTimestamp(),
+            });
+          }
+        });
+
+        sessionStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
+        sessionStorage.setItem("ticketCount", selectedSeats.length);
+        window.location.href = "payment.html";
+      } catch (err) {
+        alert(err.message || "Failed to lock some seats. Please try again.");
+        console.error(err);
+        renderLayout();
+      }
+    });
+
+      const LOCK_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
+  // remove client-side startLockTimer from confirm page; we'll compute remaining time on payment page.
+
+  confirmBtn.addEventListener("click", async () => {
+    if (selectedSeats.length === 0) {
+      alert("Select at least one seat.");
+      return;
+    }
+    try {
+      await runTransaction(db, async (transaction) => {
+        const seatRefs = selectedSeats.map(seat =>
+          doc(db, "shows", "currentShow", "seats", seat.id)
+        );
+
+        for (const seatRef of seatRefs) {
+          const seatSnap = await transaction.get(seatRef);
+          if (!seatSnap.exists()) throw new Error(`Seat ${seatRef.id} does not exist.`);
+          const data = seatSnap.data();
+          if (data.status === "booked" || data.status === "locked") {
+            throw new Error(`Seat ${seatRef.id} is no longer available.`);
+          }
+        }
+
+        // lock them
+        for (const seatRef of seatRefs) {
+          transaction.update(seatRef, {
+            status: "locked",
+            lockedBy: currentUser.uid,
+            lockedAt: serverTimestamp()
+          });
+        }
+      });
+
+      // save selection so payment page can read it
+      sessionStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
+      // redirect to payment page (payment page will read lockedAt from Firestore and start countdown)
+      window.location.href = "payment.html";
+    } catch (err) {
+      alert(err.message || "Failed to lock some seats. Please try again.");
+      console.error(err);
+      renderLayout();
+    }
   });
 
-    // ✅ If all seats were locked successfully
-    sessionStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
-    sessionStorage.setItem("ticketCount", selectedSeats.length);
-    window.location.href = "payment.html";
-  } catch (err) {
-    alert(err.message || "Failed to lock some seats. Please try again.");
-    console.error(err);
-    renderLayout(); // refresh to show correct status
-  }
-});
-
-
-
-});
-
+  // Modify your onSnapshot to treat expired locks as "available" for UI only:
+  onSnapshot(collection(db, "shows", "currentShow", "seats"), (snapshot) => {
+    seatStatusMap = {};
+    const now = Date.now();
+    snapshot.forEach(seatDoc => {
+      const data = seatDoc.data();
+      const seatId = seatDoc.id;
+      if (data.status === "locked") {
+        const lockedAtMs = data.lockedAt?.toMillis?.() || (data.lockedAt ? data.lockedAt : 0);
+        if (lockedAtMs && (now - lockedAtMs > LOCK_DURATION_MS)) {
+          // expired lock (UI-level treat as available)
+          seatStatusMap[seatId] = "available";
+        } else {
+          seatStatusMap[seatId] = "locked";
+          seatStatusMap[seatId + "_by"] = data.lockedBy;
+        }
+      } else if (data.status === "booked") {
+        seatStatusMap[seatId] = "booked";
+      } else {
+        seatStatusMap[seatId] = "available";
+      }
+    });
+    renderLayout();
+  });
   </script>
 </body>
 </html>
